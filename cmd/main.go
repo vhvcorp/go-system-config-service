@@ -19,6 +19,7 @@ import (
 	"github.com/longvhv/saas-framework-go/services/system-config-service/internal/repository"
 	"github.com/longvhv/saas-framework-go/services/system-config-service/internal/router"
 	"github.com/longvhv/saas-framework-go/services/system-config-service/internal/service"
+	"github.com/longvhv/saas-framework-go/services/system-config-service/migrations"
 	"go.uber.org/zap"
 	grpcServer "google.golang.org/grpc"
 	"google.golang.org/grpc/health"
@@ -63,6 +64,14 @@ func main() {
 		log.Fatal("Failed to connect to Redis", zap.Error(err))
 	}
 	defer redisClient.Close()
+
+	// Seed initial data
+	log.Info("Seeding initial data...")
+	if err := migrations.SeedData(mongoClient.Database()); err != nil {
+		log.Warn("Failed to seed data (may already exist)", zap.Error(err))
+	} else {
+		log.Info("Data seeded successfully")
+	}
 
 	// Initialize repositories
 	appComponentRepo := repository.NewAppComponentRepository(mongoClient.Database())

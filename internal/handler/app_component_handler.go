@@ -8,6 +8,7 @@ import (
 	"github.com/longvhv/saas-framework-go/pkg/logger"
 	"github.com/longvhv/saas-framework-go/services/system-config-service/internal/domain"
 	"github.com/longvhv/saas-framework-go/services/system-config-service/internal/service"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 )
 
@@ -117,8 +118,13 @@ func (h *AppComponentHandler) Update(c *gin.Context) {
 	}
 
 	// Convert ID string to ObjectID
-	// This is simplified - in production you'd use primitive.ObjectIDFromHex
-	
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		h.respondError(c, errors.BadRequest("Invalid ID format"))
+		return
+	}
+	component.ID = objectID
+
 	if err := h.service.Update(c.Request.Context(), &component); err != nil {
 		h.respondError(c, err)
 		return

@@ -33,6 +33,15 @@ func SeedData(db *mongo.Database) error {
 func seedCountries(ctx context.Context, db *mongo.Database) error {
 	collection := db.Collection("countries")
 
+	// Check if countries already exist
+	count, err := collection.CountDocuments(ctx, map[string]interface{}{})
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return nil // Skip seeding if data already exists
+	}
+
 	countries := []interface{}{
 		domain.Country{
 			Code:   "VN",
@@ -75,12 +84,21 @@ func seedCountries(ctx context.Context, db *mongo.Database) error {
 		},
 	}
 
-	_, err := collection.InsertMany(ctx, countries)
+	_, err = collection.InsertMany(ctx, countries)
 	return err
 }
 
 func seedCurrencies(ctx context.Context, db *mongo.Database) error {
 	collection := db.Collection("currencies")
+
+	// Check if currencies already exist
+	count, err := collection.CountDocuments(ctx, map[string]interface{}{})
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return nil // Skip seeding if data already exists
+	}
 
 	currencies := []interface{}{
 		domain.Currency{
@@ -125,15 +143,27 @@ func seedCurrencies(ctx context.Context, db *mongo.Database) error {
 		},
 	}
 
-	_, err := collection.InsertMany(ctx, currencies)
+	_, err = collection.InsertMany(ctx, currencies)
 	return err
 }
 
 func seedRoles(ctx context.Context, db *mongo.Database) error {
 	collection := db.Collection("roles")
 
+	// Check if roles already exist
+	count, err := collection.CountDocuments(ctx, map[string]interface{}{})
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return nil // Skip seeding if data already exists
+	}
+
+	// Note: These are system-level default roles without tenant_id
+	// Tenant-specific roles should be created when a tenant is provisioned
 	roles := []interface{}{
 		domain.Role{
+			TenantID:    "", // Empty for system-level default roles
 			Code:        "super_admin",
 			Name:        "Super Administrator",
 			Description: "Full system access",
@@ -145,6 +175,7 @@ func seedRoles(ctx context.Context, db *mongo.Database) error {
 			UpdatedAt:   time.Now(),
 		},
 		domain.Role{
+			TenantID:    "", // Empty for system-level default roles
 			Code:        "admin",
 			Name:        "Administrator",
 			Description: "Admin access to manage system",
@@ -156,6 +187,7 @@ func seedRoles(ctx context.Context, db *mongo.Database) error {
 			UpdatedAt:   time.Now(),
 		},
 		domain.Role{
+			TenantID:    "", // Empty for system-level default roles
 			Code:        "manager",
 			Name:        "Manager",
 			Description: "Manager access",
@@ -167,6 +199,7 @@ func seedRoles(ctx context.Context, db *mongo.Database) error {
 			UpdatedAt:   time.Now(),
 		},
 		domain.Role{
+			TenantID:    "", // Empty for system-level default roles
 			Code:        "user",
 			Name:        "User",
 			Description: "Standard user access",
@@ -179,6 +212,6 @@ func seedRoles(ctx context.Context, db *mongo.Database) error {
 		},
 	}
 
-	_, err := collection.InsertMany(ctx, roles)
+	_, err = collection.InsertMany(ctx, roles)
 	return err
 }
