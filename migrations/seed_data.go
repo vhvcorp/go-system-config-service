@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/longvhv/saas-framework-go/services/system-config-service/internal/domain"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -34,7 +35,7 @@ func seedCountries(ctx context.Context, db *mongo.Database) error {
 	collection := db.Collection("countries")
 
 	// Check if countries already exist
-	count, err := collection.CountDocuments(ctx, map[string]interface{}{})
+	count, err := collection.CountDocuments(ctx, bson.D{})
 	if err != nil {
 		return err
 	}
@@ -92,7 +93,7 @@ func seedCurrencies(ctx context.Context, db *mongo.Database) error {
 	collection := db.Collection("currencies")
 
 	// Check if currencies already exist
-	count, err := collection.CountDocuments(ctx, map[string]interface{}{})
+	count, err := collection.CountDocuments(ctx, bson.D{})
 	if err != nil {
 		return err
 	}
@@ -151,7 +152,7 @@ func seedRoles(ctx context.Context, db *mongo.Database) error {
 	collection := db.Collection("roles")
 
 	// Check if roles already exist
-	count, err := collection.CountDocuments(ctx, map[string]interface{}{})
+	count, err := collection.CountDocuments(ctx, bson.D{})
 	if err != nil {
 		return err
 	}
