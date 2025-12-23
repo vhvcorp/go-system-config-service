@@ -1,0 +1,19 @@
+package domain
+
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+// Province represents a province/state in the system
+type Province struct {
+	ID          primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Code        string             `json:"code" bson:"code"`
+	Name        map[string]string  `json:"name" bson:"name"` // i18n
+	CountryCode string             `json:"country_code" bson:"country_code"`
+	Type        string             `json:"type" bson:"type"` // province, city, state
+	Status      string             `json:"status" bson:"status"`
+	CreatedAt   time.Time          `json:"created_at" bson:"created_at"`
+	UpdatedAt   time.Time          `json:"updated_at" bson:"updated_at"`
+}
