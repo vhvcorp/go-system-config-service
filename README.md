@@ -26,7 +26,7 @@ This service provides centralized management and APIs for all system-wide config
 
 ## Tech Stack
 
-- **Language**: Go 1.21+
+- **Language**: Go 1.25+
 - **Framework**: Gin
 - **Database**: MongoDB
 - **Cache**: Redis
@@ -86,7 +86,7 @@ ENVIRONMENT=development
 ## Running Locally
 
 ### Prerequisites
-- Go 1.21+
+- Go 1.25+
 - MongoDB
 - Redis
 
