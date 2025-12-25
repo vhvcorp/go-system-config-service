@@ -8,6 +8,38 @@ type PaginationRequest struct {
 	PerPage int `form:"per_page" json:"per_page"`
 }
 
+// SetDefaults sets default values for pagination
+func (p *PaginationRequest) SetDefaults() {
+	if p.Page < 1 {
+		p.Page = 1
+	}
+	if p.PerPage < 1 {
+		p.PerPage = 30
+	}
+	if p.PerPage > 100 {
+		p.PerPage = 100
+	}
+}
+
+// ListRequest represents a list request with pagination
+type ListRequest struct {
+	Page    int `form:"page" json:"page"`
+	PerPage int `form:"per_page" json:"per_page"`
+}
+
+// SetDefaults sets default values for list request
+func (l *ListRequest) SetDefaults() {
+	if l.Page < 1 {
+		l.Page = 1
+	}
+	if l.PerPage < 1 {
+		l.PerPage = 30
+	}
+	if l.PerPage > 100 {
+		l.PerPage = 100
+	}
+}
+
 // PaginationResponse represents pagination metadata
 type PaginationResponse struct {
 	Page       int   `json:"page"`
