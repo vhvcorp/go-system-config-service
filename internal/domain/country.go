@@ -16,7 +16,7 @@ type Country struct {
 	NativeName string             `json:"native_name" bson:"native_name"`
 	PhoneCode  string             `json:"phone_code" bson:"phone_code"`
 	Currency   string             `json:"currency" bson:"currency"`
-	Flag       string             `json:"flag" bson:"flag"`   // emoji or URL
+	Flag       string             `json:"flag" bson:"flag"`     // emoji or URL
 	Region     string             `json:"region" bson:"region"` // Asia, Europe, etc.
 	Status     string             `json:"status" bson:"status"`
 	CreatedAt  time.Time          `json:"created_at" bson:"created_at"`
