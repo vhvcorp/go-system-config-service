@@ -1,7 +1,7 @@
-.PHONY: help build test lint clean run docker-build docker-push proto
+.PHONY: help build test lint clean run docker-build docker-push docker-run proto deps fmt vet install-tools test-coverage
 
 # Variables
-system-config-service := system-config-service
+SERVICE_NAME := system-config-service
 DOCKER_REGISTRY ?= ghcr.io/vhvplatform
 VERSION ?= $(shell git describe --tags --always --dirty)
 GO_VERSION := 1.25.5
@@ -10,8 +10,8 @@ help: ## Display this help screen
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 build: ## Build the service
-	@echo "Building $(system-config-service)..."
-	@go build -o bin/$(system-config-service) ./cmd/main.go
+	@echo "Building $(SERVICE_NAME)..."
+	@go build -o bin/$(SERVICE_NAME) ./cmd/main.go
 	@echo "Build complete!"
 
 test: ## Run tests
@@ -44,7 +44,7 @@ clean: ## Clean build artifacts
 	@echo "Clean complete!"
 
 run: ## Run the service locally
-	@echo "Running $(system-config-service)..."
+	@echo "Running $(SERVICE_NAME)..."
 	@go run ./cmd/main.go
 
 deps: ## Download dependencies
@@ -62,21 +62,21 @@ proto: ## Generate protobuf files (if applicable)
 
 docker-build: ## Build Docker image
 	@echo "Building Docker image..."
-	@docker build -t $(DOCKER_REGISTRY)/$(system-config-service):$(VERSION) .
-	@docker tag $(DOCKER_REGISTRY)/$(system-config-service):$(VERSION) $(DOCKER_REGISTRY)/$(system-config-service):latest
-	@echo "Docker image built: $(DOCKER_REGISTRY)/$(system-config-service):$(VERSION)"
+	@docker build -t $(DOCKER_REGISTRY)/$(SERVICE_NAME):$(VERSION) .
+	@docker tag $(DOCKER_REGISTRY)/$(SERVICE_NAME):$(VERSION) $(DOCKER_REGISTRY)/$(SERVICE_NAME):latest
+	@echo "Docker image built: $(DOCKER_REGISTRY)/$(SERVICE_NAME):$(VERSION)"
 
 docker-push: docker-build ## Push Docker image
 	@echo "Pushing Docker image..."
-	@docker push $(DOCKER_REGISTRY)/$(system-config-service):$(VERSION)
-	@docker push $(DOCKER_REGISTRY)/$(system-config-service):latest
+	@docker push $(DOCKER_REGISTRY)/$(SERVICE_NAME):$(VERSION)
+	@docker push $(DOCKER_REGISTRY)/$(SERVICE_NAME):latest
 	@echo "Docker image pushed!"
 
 docker-run: ## Run Docker container locally
 	@echo "Running Docker container..."
-	@docker run --rm -p 8080:8080 -p 50051:50051 \
-		--name $(system-config-service) \
-		$(DOCKER_REGISTRY)/$(system-config-service):latest
+	@docker run --rm -p 8085:8085 -p 50055:50055 \
+		--name $(SERVICE_NAME) \
+		$(DOCKER_REGISTRY)/$(SERVICE_NAME):latest
 
 install-tools: ## Install development tools
 	@echo "Installing development tools..."
