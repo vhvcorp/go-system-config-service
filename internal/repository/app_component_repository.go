@@ -175,6 +175,8 @@ func (r *AppComponentRepository) Delete(ctx context.Context, id string) error {
 }
 
 // FindByIDs finds multiple app components by IDs in a single query (batch operation)
+// Note: Invalid IDs are silently skipped. Only valid ObjectIDs are queried.
+// This allows partial results when some IDs are invalid, which is useful for API resilience.
 func (r *AppComponentRepository) FindByIDs(ctx context.Context, ids []string) ([]*domain.AppComponent, error) {
 	if len(ids) == 0 {
 		return []*domain.AppComponent{}, nil
@@ -184,7 +186,8 @@ func (r *AppComponentRepository) FindByIDs(ctx context.Context, ids []string) ([
 	for _, id := range ids {
 		objectID, err := primitive.ObjectIDFromHex(id)
 		if err != nil {
-			continue // Skip invalid IDs
+			// Skip invalid IDs - allows graceful degradation
+			continue
 		}
 		objectIDs = append(objectIDs, objectID)
 	}

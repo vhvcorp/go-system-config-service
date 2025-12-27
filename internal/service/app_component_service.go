@@ -198,7 +198,10 @@ func (s *AppComponentService) GetByIDs(ctx context.Context, ids []string) ([]*do
 				continue
 			}
 		}
-		// If not in cache or cache miss, add to missing list
+		// Add to missing list if:
+		// 1. Cache miss (cached is empty)
+		// 2. Deserialization failed
+		// Skip if explicitly marked as NOT_FOUND in cache (negative cache)
 		if cached != "NOT_FOUND" {
 			missingIDs = append(missingIDs, id)
 		}

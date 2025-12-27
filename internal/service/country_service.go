@@ -233,7 +233,10 @@ func (s *CountryService) GetByCodes(ctx context.Context, codes []string) ([]*dom
 				continue
 			}
 		}
-		// If not in cache or cache miss, add to missing list
+		// Add to missing list if:
+		// 1. Cache miss (cached is empty)
+		// 2. Deserialization failed
+		// Skip if explicitly marked as NOT_FOUND in cache (negative cache)
 		if cached != "NOT_FOUND" {
 			missingCodes = append(missingCodes, code)
 		}
