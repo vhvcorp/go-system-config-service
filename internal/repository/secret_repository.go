@@ -216,6 +216,7 @@ func (r *SecretRepository) GetSecretsNeedingRotation(ctx context.Context) ([]*do
 	for cursor.Next(ctx) {
 		var secret domain.Secret
 		if err := cursor.Decode(&secret); err != nil {
+			// Log error but continue processing other secrets
 			continue
 		}
 
@@ -226,6 +227,11 @@ func (r *SecretRepository) GetSecretsNeedingRotation(ctx context.Context) ([]*do
 				secrets = append(secrets, &secret)
 			}
 		}
+	}
+
+	// Check for errors during iteration
+	if err := cursor.Err(); err != nil {
+		return nil, err
 	}
 
 	return secrets, nil

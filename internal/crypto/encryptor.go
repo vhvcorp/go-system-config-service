@@ -62,19 +62,19 @@ func (e *Encryptor) Decrypt(ciphertext string) (string, error) {
 	// Decode from base64
 	data, err := base64.StdEncoding.DecodeString(ciphertext)
 	if err != nil {
-		return "", err
+		return "", errors.New("failed to decode ciphertext")
 	}
 
 	// Create AES cipher
 	block, err := aes.NewCipher(e.key)
 	if err != nil {
-		return "", err
+		return "", errors.New("decryption failed")
 	}
 
 	// Create GCM mode
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		return "", err
+		return "", errors.New("decryption failed")
 	}
 
 	// Check nonce size
@@ -89,7 +89,7 @@ func (e *Encryptor) Decrypt(ciphertext string) (string, error) {
 	// Decrypt and open
 	plaintext, err := gcm.Open(nil, nonce, cipherBytes, nil)
 	if err != nil {
-		return "", err
+		return "", errors.New("decryption failed")
 	}
 
 	return string(plaintext), nil

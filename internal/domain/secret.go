@@ -88,20 +88,19 @@ func (s *Secret) Validate() error {
 		return errors.New("environment is required")
 	}
 	// Validate environment value
-	validEnvs := map[string]bool{"development": true, "staging": true, "production": true}
-	if !validEnvs[s.Environment] {
+	if !IsValidEnvironment(s.Environment) {
 		return errors.New("environment must be one of: development, staging, production")
 	}
 	if s.Status == "" {
-		s.Status = "active"
+		s.Status = SecretStatusActive
 	}
 	// Validate status value
-	validStatuses := map[string]bool{"active": true, "expired": true, "rotated": true}
+	validStatuses := map[string]bool{SecretStatusActive: true, SecretStatusExpired: true, SecretStatusRotated: true}
 	if !validStatuses[s.Status] {
 		return errors.New("status must be one of: active, expired, rotated")
 	}
 	if s.RotationPolicy != "" {
-		validPolicies := map[string]bool{"manual": true, "auto": true}
+		validPolicies := map[string]bool{RotationPolicyManual: true, RotationPolicyAuto: true}
 		if !validPolicies[s.RotationPolicy] {
 			return errors.New("rotation_policy must be one of: manual, auto")
 		}

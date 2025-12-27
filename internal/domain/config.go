@@ -70,15 +70,14 @@ func (c *Config) Validate() error {
 		return errors.New("environment is required")
 	}
 	// Validate environment value
-	validEnvs := map[string]bool{"development": true, "staging": true, "production": true}
-	if !validEnvs[c.Environment] {
+	if !IsValidEnvironment(c.Environment) {
 		return errors.New("environment must be one of: development, staging, production")
 	}
 	if c.Status == "" {
-		c.Status = "active"
+		c.Status = StatusActive
 	}
 	// Validate status value
-	validStatuses := map[string]bool{"active": true, "inactive": true, "archived": true}
+	validStatuses := map[string]bool{StatusActive: true, StatusInactive: true, StatusArchived: true}
 	if !validStatuses[c.Status] {
 		return errors.New("status must be one of: active, inactive, archived")
 	}
