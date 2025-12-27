@@ -67,6 +67,11 @@ func (s *CountryService) GetByCode(ctx context.Context, code string) (*domain.Co
 	cacheKey := fmt.Sprintf("system-config:country:%s", code)
 	cached, err := s.redisClient.Get(ctx, cacheKey)
 	if err == nil && cached != "" {
+		// Check for negative cache (non-existent record marker)
+		if cached == "NOT_FOUND" {
+			return nil, errors.NotFound("Country not found")
+		}
+		
 		var country domain.Country
 		if err := json.Unmarshal([]byte(cached), &country); err == nil {
 			return &country, nil
@@ -79,7 +84,11 @@ func (s *CountryService) GetByCode(ctx context.Context, code string) (*domain.Co
 		s.logger.Error("Failed to get country", zap.Error(err))
 		return nil, errors.Internal("Failed to get country")
 	}
+	
 	if country == nil {
+		// Implement negative caching: cache the fact that this country doesn't exist
+		// This prevents repeated database hits for non-existent countries
+		s.redisClient.Set(ctx, cacheKey, []byte("NOT_FOUND"), 5*time.Minute)
 		return nil, errors.NotFound("Country not found")
 	}
 
@@ -196,4 +205,79 @@ func (s *CountryService) Delete(ctx context.Context, code string) error {
 
 	s.logger.Info("Country deleted", zap.String("code", code))
 	return nil
+}
+
+// GetByCodes gets multiple countries by codes efficiently (batch operation)
+// This method uses the new batch repository method to fetch multiple countries in one query
+func (s *CountryService) GetByCodes(ctx context.Context, codes []string) ([]*domain.Country, error) {
+	if len(codes) == 0 {
+		return []*domain.Country{}, nil
+	}
+
+	// Try to get all from cache first
+	cacheKeys := make([]string, len(codes))
+	for i, code := range codes {
+		cacheKeys[i] = fmt.Sprintf("system-config:country:%s", code)
+	}
+
+	// Get cached results
+	cachedCountries := make(map[string]*domain.Country)
+	missingCodes := []string{}
+
+	for i, code := range codes {
+		cached, err := s.redisClient.Get(ctx, cacheKeys[i])
+		if err == nil && cached != "" && cached != "NOT_FOUND" {
+			var country domain.Country
+			if err := json.Unmarshal([]byte(cached), &country); err == nil {
+				cachedCountries[code] = &country
+				continue
+			}
+		}
+		// If not in cache or cache miss, add to missing list
+		if cached != "NOT_FOUND" {
+			missingCodes = append(missingCodes, code)
+		}
+	}
+
+	// Fetch missing countries from database in batch
+	var dbCountries []*domain.Country
+	if len(missingCodes) > 0 {
+		var err error
+		dbCountries, err = s.repo.FindByCodes(ctx, missingCodes)
+		if err != nil {
+			s.logger.Error("Failed to get countries", zap.Error(err))
+			return nil, errors.Internal("Failed to get countries")
+		}
+
+		// Cache the retrieved countries
+		for _, country := range dbCountries {
+			if data, err := json.Marshal(country); err == nil {
+				cacheKey := fmt.Sprintf("system-config:country:%s", country.Code)
+				s.redisClient.Set(ctx, cacheKey, data, 24*time.Hour)
+			}
+			cachedCountries[country.Code] = country
+		}
+
+		// Implement negative caching for codes that weren't found
+		foundCodes := make(map[string]bool)
+		for _, country := range dbCountries {
+			foundCodes[country.Code] = true
+		}
+		for _, code := range missingCodes {
+			if !foundCodes[code] {
+				cacheKey := fmt.Sprintf("system-config:country:%s", code)
+				s.redisClient.Set(ctx, cacheKey, []byte("NOT_FOUND"), 5*time.Minute)
+			}
+		}
+	}
+
+	// Build result in the same order as requested codes
+	result := make([]*domain.Country, 0, len(codes))
+	for _, code := range codes {
+		if country, exists := cachedCountries[code]; exists {
+			result = append(result, country)
+		}
+	}
+
+	return result, nil
 }

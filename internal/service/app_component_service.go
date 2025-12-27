@@ -78,6 +78,11 @@ func (s *AppComponentService) GetByCode(ctx context.Context, tenantID, code stri
 	cacheKey := fmt.Sprintf("system-config:app-component:%s:%s", tenantID, code)
 	cached, err := s.redisClient.Get(ctx, cacheKey)
 	if err == nil && cached != "" {
+		// Check for negative cache (non-existent record marker)
+		if cached == "NOT_FOUND" {
+			return nil, errors.NotFound("App component not found")
+		}
+
 		var component domain.AppComponent
 		if err := json.Unmarshal([]byte(cached), &component); err == nil {
 			return &component, nil
@@ -90,7 +95,10 @@ func (s *AppComponentService) GetByCode(ctx context.Context, tenantID, code stri
 		s.logger.Error("Failed to get app component", zap.Error(err))
 		return nil, errors.Internal("Failed to get app component")
 	}
+	
 	if component == nil {
+		// Implement negative caching
+		s.redisClient.Set(ctx, cacheKey, []byte("NOT_FOUND"), 5*time.Minute)
 		return nil, errors.NotFound("App component not found")
 	}
 
@@ -168,4 +176,73 @@ func (s *AppComponentService) Delete(ctx context.Context, id, tenantID string) e
 
 	s.logger.Info("App component deleted", zap.String("id", id))
 	return nil
+}
+
+// GetByIDs gets multiple app components by IDs efficiently (batch operation)
+func (s *AppComponentService) GetByIDs(ctx context.Context, ids []string) ([]*domain.AppComponent, error) {
+	if len(ids) == 0 {
+		return []*domain.AppComponent{}, nil
+	}
+
+	// Try to get all from cache first
+	cachedComponents := make(map[string]*domain.AppComponent)
+	missingIDs := []string{}
+
+	for _, id := range ids {
+		cacheKey := fmt.Sprintf("system-config:app-component:id:%s", id)
+		cached, err := s.redisClient.Get(ctx, cacheKey)
+		if err == nil && cached != "" && cached != "NOT_FOUND" {
+			var component domain.AppComponent
+			if err := json.Unmarshal([]byte(cached), &component); err == nil {
+				cachedComponents[id] = &component
+				continue
+			}
+		}
+		// If not in cache or cache miss, add to missing list
+		if cached != "NOT_FOUND" {
+			missingIDs = append(missingIDs, id)
+		}
+	}
+
+	// Fetch missing components from database in batch
+	var dbComponents []*domain.AppComponent
+	if len(missingIDs) > 0 {
+		var err error
+		dbComponents, err = s.repo.FindByIDs(ctx, missingIDs)
+		if err != nil {
+			s.logger.Error("Failed to get app components", zap.Error(err))
+			return nil, errors.Internal("Failed to get app components")
+		}
+
+		// Cache the retrieved components
+		for _, component := range dbComponents {
+			if data, err := json.Marshal(component); err == nil {
+				cacheKey := fmt.Sprintf("system-config:app-component:id:%s", component.ID.Hex())
+				s.redisClient.Set(ctx, cacheKey, data, 1*time.Hour)
+			}
+			cachedComponents[component.ID.Hex()] = component
+		}
+
+		// Implement negative caching for IDs that weren't found
+		foundIDs := make(map[string]bool)
+		for _, component := range dbComponents {
+			foundIDs[component.ID.Hex()] = true
+		}
+		for _, id := range missingIDs {
+			if !foundIDs[id] {
+				cacheKey := fmt.Sprintf("system-config:app-component:id:%s", id)
+				s.redisClient.Set(ctx, cacheKey, []byte("NOT_FOUND"), 5*time.Minute)
+			}
+		}
+	}
+
+	// Build result in the same order as requested IDs
+	result := make([]*domain.AppComponent, 0, len(ids))
+	for _, id := range ids {
+		if component, exists := cachedComponents[id]; exists {
+			result = append(result, component)
+		}
+	}
+
+	return result, nil
 }
