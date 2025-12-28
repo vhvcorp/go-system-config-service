@@ -12,9 +12,9 @@ type Currency struct {
 	Code          string             `json:"code" bson:"code"` // ISO 4217
 	Name          map[string]string  `json:"name" bson:"name"` // i18n
 	Symbol        string             `json:"symbol" bson:"symbol"`
-	DecimalDigits int                `json:"decimal_digits" bson:"decimal_digits"`
+	DecimalDigits int                `json:"decimal_digits" bson:"decimalDigits"`
 	Countries     []string           `json:"countries" bson:"countries"` // country codes
 	Status        string             `json:"status" bson:"status"`
-	CreatedAt     time.Time          `json:"created_at" bson:"created_at"`
-	UpdatedAt     time.Time          `json:"updated_at" bson:"updated_at"`
+	CreatedAt     time.Time          `json:"created_at" bson:"createdAt"`
+	UpdatedAt     time.Time          `json:"updated_at" bson:"updatedAt"`
 }

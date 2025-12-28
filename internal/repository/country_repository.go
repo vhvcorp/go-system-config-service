@@ -106,15 +106,15 @@ func (r *CountryRepository) Update(ctx context.Context, country *domain.Country)
 	// Use $set to update only provided fields for better performance
 	update := bson.M{
 		"$set": bson.M{
-			"code3":       country.Code3,
-			"name":        country.Name,
-			"native_name": country.NativeName,
-			"phone_code":  country.PhoneCode,
-			"currency":    country.Currency,
-			"flag":        country.Flag,
-			"region":      country.Region,
-			"status":      country.Status,
-			"updated_at":  country.UpdatedAt,
+			"code3":      country.Code3,
+			"name":       country.Name,
+			"nativeName": country.NativeName,
+			"phoneCode":  country.PhoneCode,
+			"currency":   country.Currency,
+			"flag":       country.Flag,
+			"region":     country.Region,
+			"status":     country.Status,
+			"updatedAt":  country.UpdatedAt,
 		},
 	}
 

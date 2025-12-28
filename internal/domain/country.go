@@ -13,14 +13,14 @@ type Country struct {
 	Code       string             `json:"code" bson:"code"`   // ISO 3166-1 alpha-2
 	Code3      string             `json:"code3" bson:"code3"` // ISO 3166-1 alpha-3
 	Name       map[string]string  `json:"name" bson:"name"`   // i18n: en, vi
-	NativeName string             `json:"native_name" bson:"native_name"`
-	PhoneCode  string             `json:"phone_code" bson:"phone_code"`
+	NativeName string             `json:"native_name" bson:"nativeName"`
+	PhoneCode  string             `json:"phone_code" bson:"phoneCode"`
 	Currency   string             `json:"currency" bson:"currency"`
 	Flag       string             `json:"flag" bson:"flag"`     // emoji or URL
 	Region     string             `json:"region" bson:"region"` // Asia, Europe, etc.
 	Status     string             `json:"status" bson:"status"`
-	CreatedAt  time.Time          `json:"created_at" bson:"created_at"`
-	UpdatedAt  time.Time          `json:"updated_at" bson:"updated_at"`
+	CreatedAt  time.Time          `json:"created_at" bson:"createdAt"`
+	UpdatedAt  time.Time          `json:"updated_at" bson:"updatedAt"`
 }
 
 // Validate validates the country data

@@ -593,39 +593,39 @@ The service creates optimized indexes for query performance:
 
 ```javascript
 // Configurations
-db.configs.createIndex({ "tenant_id": 1, "config_key": 1, "environment": 1 }, { unique: true });
-db.configs.createIndex({ "tenant_id": 1, "environment": 1, "status": 1 });
-db.configs.createIndex({ "updated_at": 1 });
+db.configs.createIndex({ "tenantId": 1, "configKey": 1, "environment": 1 }, { unique: true });
+db.configs.createIndex({ "tenantId": 1, "environment": 1, "status": 1 });
+db.configs.createIndex({ "updatedAt": 1 });
 db.configs.createIndex({ "tags": 1 });
 
 // Configuration Versions
-db.config_versions.createIndex({ "config_id": 1, "version_number": 1 });
-db.config_versions.createIndex({ "config_id": 1, "status": 1 });
-db.config_versions.createIndex({ "tenant_id": 1, "created_at": -1 });
+db.config_versions.createIndex({ "configId": 1, "versionNumber": 1 });
+db.config_versions.createIndex({ "configId": 1, "status": 1 });
+db.config_versions.createIndex({ "tenantId": 1, "createdAt": -1 });
 
 // Audit Logs (with TTL)
-db.config_audit_log.createIndex({ "config_id": 1, "timestamp": -1 });
-db.config_audit_log.createIndex({ "tenant_id": 1, "timestamp": -1 });
-db.config_audit_log.createIndex({ "user_id": 1, "timestamp": -1 });
+db.config_audit_log.createIndex({ "configId": 1, "timestamp": -1 });
+db.config_audit_log.createIndex({ "tenantId": 1, "timestamp": -1 });
+db.config_audit_log.createIndex({ "userId": 1, "timestamp": -1 });
 db.config_audit_log.createIndex({ "timestamp": 1 }, { expireAfterSeconds: 63072000 }); // 2 years
 
 // Secrets
-db.secrets.createIndex({ "tenant_id": 1, "secret_key": 1, "environment": 1 }, { unique: true });
-db.secrets.createIndex({ "tenant_id": 1, "environment": 1 });
-db.secrets.createIndex({ "expires_at": 1 });
-db.secrets.createIndex({ "last_rotated_at": 1 });
+db.secrets.createIndex({ "tenantId": 1, "secretKey": 1, "environment": 1 }, { unique: true });
+db.secrets.createIndex({ "tenantId": 1, "environment": 1 });
+db.secrets.createIndex({ "expiresAt": 1 });
+db.secrets.createIndex({ "lastRotatedAt": 1 });
 
 // App Components
-db.app_components.createIndex({ "tenant_id": 1, "code": 1 }, { unique: true });
-db.app_components.createIndex({ "tenant_id": 1, "status": 1 });
+db.app_components.createIndex({ "tenantId": 1, "code": 1 }, { unique: true });
+db.app_components.createIndex({ "tenantId": 1, "status": 1 });
 
 // Countries
 db.countries.createIndex({ "code": 1 }, { unique: true });
 db.countries.createIndex({ "status": 1 });
 
 // Watch Subscriptions
-db.watch_subscriptions.createIndex({ "subscriber_id": 1, "tenant_id": 1 });
-db.watch_subscriptions.createIndex({ "service_name": 1, "status": 1 });
+db.watch_subscriptions.createIndex({ "subscriberId": 1, "tenantId": 1 });
+db.watch_subscriptions.createIndex({ "serviceName": 1, "status": 1 });
 ```
 
 ## Best Practices

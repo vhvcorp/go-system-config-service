@@ -11,9 +11,9 @@ type Province struct {
 	ID          primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Code        string             `json:"code" bson:"code"`
 	Name        map[string]string  `json:"name" bson:"name"` // i18n
-	CountryCode string             `json:"country_code" bson:"country_code"`
+	CountryCode string             `json:"country_code" bson:"countryCode"`
 	Type        string             `json:"type" bson:"type"` // province, city, state
 	Status      string             `json:"status" bson:"status"`
-	CreatedAt   time.Time          `json:"created_at" bson:"created_at"`
-	UpdatedAt   time.Time          `json:"updated_at" bson:"updated_at"`
+	CreatedAt   time.Time          `json:"created_at" bson:"createdAt"`
+	UpdatedAt   time.Time          `json:"updated_at" bson:"updatedAt"`
 }
