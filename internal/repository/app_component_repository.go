@@ -28,13 +28,13 @@ func NewAppComponentRepository(db *mongo.Database) *AppComponentRepository {
 	indexes := []mongo.IndexModel{
 		{
 			Keys: bson.D{
-				{Key: "tenant_id", Value: 1},
+				{Key: "tenantId", Value: 1},
 				{Key: "code", Value: 1},
 			},
 			Options: options.Index().SetUnique(true),
 		},
 		{
-			Keys: bson.D{{Key: "tenant_id", Value: 1}, {Key: "status", Value: 1}},
+			Keys: bson.D{{Key: "tenantId", Value: 1}, {Key: "status", Value: 1}},
 		},
 	}
 
@@ -80,10 +80,10 @@ func (r *AppComponentRepository) FindByID(ctx context.Context, id string) (*doma
 func (r *AppComponentRepository) FindByCode(ctx context.Context, tenantID, code string) (*domain.AppComponent, error) {
 	var component domain.AppComponent
 	// Use compound index hint for optimal performance
-	opts := options.FindOne().SetHint(bson.D{{Key: "tenant_id", Value: 1}, {Key: "code", Value: 1}})
+	opts := options.FindOne().SetHint(bson.D{{Key: "tenantId", Value: 1}, {Key: "code", Value: 1}})
 	err := r.collection.FindOne(ctx, bson.M{
-		"tenant_id": tenantID,
-		"code":      code,
+		"tenantId": tenantID,
+		"code":     code,
 	}, opts).Decode(&component)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -96,10 +96,10 @@ func (r *AppComponentRepository) FindByCode(ctx context.Context, tenantID, code 
 
 // List lists app components with pagination
 func (r *AppComponentRepository) List(ctx context.Context, tenantID string, page, perPage int) ([]*domain.AppComponent, int64, error) {
-	filter := bson.M{"tenant_id": tenantID}
+	filter := bson.M{"tenantId": tenantID}
 
 	// Count total with index hint
-	countOpts := options.Count().SetHint(bson.D{{Key: "tenant_id", Value: 1}})
+	countOpts := options.Count().SetHint(bson.D{{Key: "tenantId", Value: 1}})
 	total, err := r.collection.CountDocuments(ctx, filter, countOpts)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to count app components: %w", err)
@@ -109,8 +109,8 @@ func (r *AppComponentRepository) List(ctx context.Context, tenantID string, page
 	opts := options.Find().
 		SetSkip(int64((page - 1) * perPage)).
 		SetLimit(int64(perPage)).
-		SetSort(bson.D{{Key: "created_at", Value: -1}}).
-		SetHint(bson.D{{Key: "tenant_id", Value: 1}}) // Use tenant_id index
+		SetSort(bson.D{{Key: "createdAt", Value: -1}}).
+		SetHint(bson.D{{Key: "tenantId", Value: 1}}) // Use tenantId index
 
 	cursor, err := r.collection.Find(ctx, filter, opts)
 	if err != nil {
@@ -139,8 +139,8 @@ func (r *AppComponentRepository) Update(ctx context.Context, component *domain.A
 			"version":     component.Version,
 			"status":      component.Status,
 			"config":      component.Config,
-			"updated_at":  component.UpdatedAt,
-			"updated_by":  component.UpdatedBy,
+			"updatedAt":   component.UpdatedAt,
+			"updatedBy":   component.UpdatedBy,
 		},
 	}
 

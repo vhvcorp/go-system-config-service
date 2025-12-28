@@ -593,39 +593,71 @@ The service creates optimized indexes for query performance:
 
 ```javascript
 // Configurations
-db.configs.createIndex({ "tenant_id": 1, "config_key": 1, "environment": 1 }, { unique: true });
-db.configs.createIndex({ "tenant_id": 1, "environment": 1, "status": 1 });
-db.configs.createIndex({ "updated_at": 1 });
+db.configs.createIndex({ "tenantId": 1, "configKey": 1, "environment": 1 }, { unique: true });
+db.configs.createIndex({ "tenantId": 1, "environment": 1, "status": 1 });
+db.configs.createIndex({ "updatedAt": 1 });
 db.configs.createIndex({ "tags": 1 });
 
 // Configuration Versions
-db.config_versions.createIndex({ "config_id": 1, "version_number": 1 });
-db.config_versions.createIndex({ "config_id": 1, "status": 1 });
-db.config_versions.createIndex({ "tenant_id": 1, "created_at": -1 });
+db.config_versions.createIndex({ "configId": 1, "versionNumber": 1 });
+db.config_versions.createIndex({ "configId": 1, "status": 1 });
+db.config_versions.createIndex({ "tenantId": 1, "createdAt": -1 });
 
 // Audit Logs (with TTL)
-db.config_audit_log.createIndex({ "config_id": 1, "timestamp": -1 });
-db.config_audit_log.createIndex({ "tenant_id": 1, "timestamp": -1 });
-db.config_audit_log.createIndex({ "user_id": 1, "timestamp": -1 });
+db.config_audit_log.createIndex({ "configId": 1, "timestamp": -1 });
+db.config_audit_log.createIndex({ "tenantId": 1, "timestamp": -1 });
+db.config_audit_log.createIndex({ "userId": 1, "timestamp": -1 });
 db.config_audit_log.createIndex({ "timestamp": 1 }, { expireAfterSeconds: 63072000 }); // 2 years
 
 // Secrets
-db.secrets.createIndex({ "tenant_id": 1, "secret_key": 1, "environment": 1 }, { unique: true });
-db.secrets.createIndex({ "tenant_id": 1, "environment": 1 });
-db.secrets.createIndex({ "expires_at": 1 });
-db.secrets.createIndex({ "last_rotated_at": 1 });
+db.secrets.createIndex({ "tenantId": 1, "secretKey": 1, "environment": 1 }, { unique: true });
+db.secrets.createIndex({ "tenantId": 1, "environment": 1 });
+db.secrets.createIndex({ "expiresAt": 1 });
+db.secrets.createIndex({ "lastRotatedAt": 1 });
 
 // App Components
-db.app_components.createIndex({ "tenant_id": 1, "code": 1 }, { unique: true });
-db.app_components.createIndex({ "tenant_id": 1, "status": 1 });
+db.app_components.createIndex({ "tenantId": 1, "code": 1 }, { unique: true });
+db.app_components.createIndex({ "tenantId": 1, "status": 1 });
 
 // Countries
 db.countries.createIndex({ "code": 1 }, { unique: true });
 db.countries.createIndex({ "status": 1 });
 
 // Watch Subscriptions
-db.watch_subscriptions.createIndex({ "subscriber_id": 1, "tenant_id": 1 });
-db.watch_subscriptions.createIndex({ "service_name": 1, "status": 1 });
+db.watch_subscriptions.createIndex({ "subscriberId": 1, "tenantId": 1 });
+db.watch_subscriptions.createIndex({ "serviceName": 1, "status": 1 });
+```
+
+## MongoDB Naming Conventions
+
+This service strictly adheres to MongoDB design best practices:
+
+### Collection Names
+- **Format**: `snake_case`
+- **Examples**: `app_components`, `countries`, `currencies`, `roles`
+- **Reasoning**: Collection names represent entities and are typically lowercase with underscores separating words, following MongoDB conventions
+
+### Field Names
+- **Format**: `camelCase`
+- **Examples**: `tenantId`, `createdAt`, `updatedAt`, `nativeName`, `phoneCode`
+- **Reasoning**: MongoDB field names use camelCase for better JavaScript/JSON integration and consistency with MongoDB's internal naming
+- **Special cases**: 
+  - `_id` remains as MongoDB's standard primary key
+  - JSON API responses use `snake_case` for consistency with REST API conventions, while MongoDB storage uses `camelCase`
+
+### Field Naming Examples
+```javascript
+// Correct MongoDB document structure
+{
+  "_id": ObjectId("..."),
+  "tenantId": "tenant-123",
+  "code": "COMP001",
+  "name": "My Component",
+  "createdAt": ISODate("2024-01-01T00:00:00Z"),
+  "updatedAt": ISODate("2024-01-01T00:00:00Z"),
+  "isActive": true,
+  "phoneCode": "+84"
+}
 ```
 
 ## Best Practices
